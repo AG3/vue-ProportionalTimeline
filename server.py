@@ -9,7 +9,7 @@ urls = (
 
 class index:
     def GET(self):
-        render =web.template.render('../VueProject/SclaedTimeline/dist')
+        render = web.template.render('../../vue-ProportionalTimeline/dist/')
         return render.index()
 
 
