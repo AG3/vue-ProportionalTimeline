@@ -1,7 +1,7 @@
 <template>
 <div>
   <div class="md-layout">
-  <TimelineItem :key="i" v-for="i in items" :titleS="i.title" :ctnt="i.ctnt"
+  <TimelineItem :key="i.title" v-for="i in items" :titleS="i.title" :ctnt="i.content"
                 style="position: absolute; left: 25px" :style="{top: i.time * 120 + 'px'}">
   </TimelineItem>
   </div>
@@ -16,7 +16,7 @@
     </md-dialog-actions>
   </md-dialog>
 
-  <md-button class="md-fab md-fab-bottom-right md-fixed md-primary" @click="showDialog = true">
+  <md-button class="md-fab md-fab-bottom-right md-fixed md-primary" @click="update">
     <md-icon>add</md-icon>
   </md-button>
   <div class="tl-line">
@@ -35,18 +35,26 @@ export default {
     return {
       items: [{
         title: '1',
-        ctnt: 'lol',
+        content: 'lol',
         time: 1
       }, {
         title: '2',
-        ctnt: 'lol',
+        content: 'lol',
         time: 2
       }, {
         title: '3',
-        ctnt: 'lol',
+        content: 'lol',
         time: 10
       }],
       showDialog: false
+    }
+  },
+  methods: {
+    update: function () {
+      this.$http.get('http://localhost:8888/events').then(response => {
+        console.log(response.body)
+        this.items.push(response.body)
+      })
     }
   }
 }
