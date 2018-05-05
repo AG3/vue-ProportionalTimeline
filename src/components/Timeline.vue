@@ -1,8 +1,8 @@
 <template>
 <div>
   <div class="md-layout">
-  <TimelineItem :key="i.title" v-for="i in items" :titleS="i.title" :ctnt="i.content"
-                style="position: absolute; left: 25px" :style="{top: i.time * 120 + 'px'}">
+  <TimelineItem class="tl-item" :key="i.id" v-for="i in items" :titleS="i.title" :ctnt="i.content"
+                :style="{top: i.time * px_per_day + 'px', left: (25 + getFloatPos(i)) + 'px'}">
   </TimelineItem>
   </div>
 
@@ -33,28 +33,40 @@ export default {
   },
   data: () => {
     return {
-      items: [{
-        title: '1',
-        content: 'lol',
-        time: 1
-      }, {
-        title: '2',
-        content: 'lol',
-        time: 2
-      }, {
-        title: '3',
-        content: 'lol',
-        time: 10
-      }],
-      showDialog: false
+      items: [],
+      showDialog: false,
+      px_per_day: 100,
+      test: 1
     }
   },
   methods: {
     update: function () {
-      this.$http.get('http://localhost:8888/events').then(response => {
+      /* this.$http.get('http://localhost:8888/events').then(response => {
         console.log(response.body)
         this.items.push(response.body)
+      }) */
+      this.items.push({
+        id: this.test,
+        title: this.test.toString(),
+        content: 'lol',
+        time: 2
       })
+      this.test++
+    },
+    getFloatPos: function (mt) {
+      var mypos = mt.time * this.px_per_day
+      var curData = this.items
+      var i
+      var offset = 0
+      console.log('len: ' + curData.length)
+      for (i = 0; i < curData.length; i++) {
+        if (curData[i].time * this.px_per_day <= mypos &&
+          curData[i].time * this.px_per_day + 100 > mypos &&
+          curData[i].id !== mt.id) {
+          offset++
+        }
+      }
+      return offset * 170
     }
   }
 }
@@ -68,5 +80,9 @@ export default {
   position: fixed;
   top:0;
   left: 10px;
+}
+.tl-item {
+  position: absolute;
+  left: 25px;
 }
 </style>
