@@ -1,13 +1,13 @@
 <template>
-  <md-card class="md-layout-item md-medium-size-20">
-    <md-card-header>
+  <v-card class="event-card">
+    <v-card-title>
       {{ titleS }}
-    </md-card-header>
-    <md-card-content>
+    </v-card-title>
+    <v-card-text>
       {{ctnt}}
-    </md-card-content>
+    </v-card-text>
 
-  </md-card>
+  </v-card>
 </template>
 
 <script>
@@ -21,5 +21,7 @@ export default {
 </script>
 
 <style scoped>
-
+.event-card {
+  width: 150px;
+}
 </style>

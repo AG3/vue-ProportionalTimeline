@@ -3,11 +3,11 @@
 import Vue from 'vue'
 import VueResource from 'vue-resource'
 import Timeline from './components/Timeline'
-import VueMaterial from 'vue-material'
-import 'vue-material/dist/vue-material.min.css'
+import Vuetify from 'vuetify'
+import 'vuetify/dist/vuetify.min.css'
 
 Vue.config.productionTip = false
-Vue.use(VueMaterial)
+Vue.use(Vuetify)
 Vue.use(VueResource)
 /* eslint-disable no-new */
 new Vue({

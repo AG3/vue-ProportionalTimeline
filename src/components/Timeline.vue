@@ -1,27 +1,44 @@
 <template>
-<div>
-  <div class="md-layout">
+<v-app id="inspire">
+  <div>
   <TimelineItem class="tl-item" :key="i.id" v-for="i in items" :titleS="i.title" :ctnt="i.content"
-                :style="{top: i.time * px_per_day + 'px', left: (25 + getFloatPos(i)) + 'px'}">
+                :style="{top: getVerticalOffset(i.date) + 'px', left: (25 + getFloatPos(i)) + 'px'}">
   </TimelineItem>
   </div>
 
-  <md-dialog :md-active.sync="showDialog" :md-backdrop="false">
-    <md-dialog-title>Preferences</md-dialog-title>
-      <md-dialog-content>CONTENT</md-dialog-content>
+  <v-dialog v-model="showDialog" max-width="600px">
+    <v-card>
+    <v-card-title>Preferences</v-card-title>
+    <v-card-text>
+      <v-text-field
+        id="date"
+        v-model="input_date"
+        label="Date"
+      ></v-text-field>
+      <v-text-field
+        id="title"
+        v-model="input_title"
+        label="Title"
+      ></v-text-field>
+      <v-text-field
+        id="content"
+        v-model="input_content"
+        label="Content"
+      ></v-text-field>
+    </v-card-text>
 
-    <md-dialog-actions>
-      <md-button class="md-primary" @click="showDialog = false">Close</md-button>
-      <md-button class="md-primary" @click="showDialog = false">Save</md-button>
-    </md-dialog-actions>
-  </md-dialog>
+    <v-card-actions>
+      <v-btn right color="primary" @click="update">Add</v-btn>
+    </v-card-actions>
+    </v-card>
+  </v-dialog>
 
-  <md-button class="md-fab md-fab-bottom-right md-fixed md-primary" @click="update">
-    <md-icon>add</md-icon>
-  </md-button>
+  <v-btn fab fixed right bottom v-on:click="showDialog = true">
+    <v-icon>add</v-icon>
+  </v-btn>
   <div class="tl-line">
   </div>
-</div>
+</v-app>
 </template>
 
 <script>
@@ -35,38 +52,61 @@ export default {
     return {
       items: [],
       showDialog: false,
-      px_per_day: 100,
-      test: 1
+      px_per_unit: 100,
+      col_float: [0, 0, 0, 0, 0, 0, 0],
+      input_title: '',
+      input_date: '',
+      input_content: '',
+      startTimeStamp: new Date('2016-10-09').getTime(),
+      WIDTH: 170,
+      HEIGHT: 150
     }
   },
   methods: {
     update: function () {
-      /* this.$http.get('http://localhost:8888/events').then(response => {
-        console.log(response.body)
-        this.items.push(response.body)
-      }) */
-      this.items.push({
-        id: this.test,
-        title: this.test.toString(),
-        content: 'lol',
-        time: 2
+      var bodyData = {
+        id: Math.round(Date.now() / 100),
+        title: this.input_title,
+        date: this.input_date,
+        content: this.input_content
+      }
+
+      this.$http.post('http://localhost:8888/events', bodyData).then((response) => {
+        if (response.data === 'OKAY') {
+          bodyData.offset = -1
+          this.items.push(bodyData)
+        }
       })
-      this.test++
+      this.input_content = ''
+      this.input_title = ''
+      this.input_date = ''
+      // this.showDialog = false
     },
     getFloatPos: function (mt) {
-      var mypos = mt.time * this.px_per_day
-      var curData = this.items
+      if (mt.offset !== -1) {
+        return mt.offset * WIDTH
+      }
+      var mypos = this.getVerticalOffset(mt.date)
       var i
       var offset = 0
-      console.log('len: ' + curData.length)
-      for (i = 0; i < curData.length; i++) {
-        if (curData[i].time * this.px_per_day <= mypos &&
-          curData[i].time * this.px_per_day + 100 > mypos &&
-          curData[i].id !== mt.id) {
-          offset++
+
+      for (i = 0; i < this.col_float.length; i++) {
+        if (mypos >= this.col_float[i]) {
+          this.col_float[i] = mypos + this.HEIGHT
+          offset = i
+          break
         }
       }
-      return offset * 170
+      mt.offset = offset
+
+      // mt.title = offset.toString()
+
+      return offset * this.WIDTH
+    },
+    getVerticalOffset: function(date) {
+      var diffMilli = date.getTime() - this.startTimeStamp
+      diffMilli /= (1000 * 60 * 60 * 24)
+      return diffMilli * this.px_per_unit
     }
   }
 }
