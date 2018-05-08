@@ -1,10 +1,9 @@
 <template>
 <v-app id="inspire">
-  <div>
-  <TimelineItem class="tl-item" :key="i.id" v-for="i in items" :titleS="i.title" :ctnt="i.content"
-                :style="{top: getVerticalOffset(i.date) + 'px', left: (25 + getFloatPos(i)) + 'px'}">
+  <TimelineItem class="tl-item" :key="i.id" v-for="i in items" :titleS="i.title" :date="i.date"
+                :style="{top: getVerticalOffset(i.date) + 'px', left: (44 + getFloatPos(i)) + 'px'}">
   </TimelineItem>
-  </div>
+  <v-icon color="error" style="z-index:10; position: absolute; left: 0px;" :key="i.id" v-for="i in items" :style="{top: getVerticalOffset(i.date) - 12 + 'px'}">play_arrow</v-icon>
 
   <v-dialog v-model="showDialog" max-width="600px">
     <v-card>
@@ -20,23 +19,18 @@
         v-model="input_title"
         label="Title"
       ></v-text-field>
-      <v-text-field
-        id="content"
-        v-model="input_content"
-        label="Content"
-      ></v-text-field>
     </v-card-text>
 
     <v-card-actions>
-      <v-btn right color="primary" @click="update">Add</v-btn>
+      <v-btn color="primary" @click="update">Add</v-btn>
     </v-card-actions>
     </v-card>
   </v-dialog>
 
-  <v-btn fab fixed right bottom v-on:click="showDialog = true">
+  <v-btn fab fixed right bottom color="primary" v-on:click="showDialog = true">
     <v-icon>add</v-icon>
   </v-btn>
-  <div class="tl-line">
+  <div class="tl-line elevation-2">
   </div>
 </v-app>
 </template>
@@ -52,14 +46,13 @@ export default {
     return {
       items: [],
       showDialog: false,
-      px_per_unit: 100,
+      px_per_unit: 120,
       col_float: [0, 0, 0, 0, 0, 0, 0],
       input_title: '',
       input_date: '',
-      input_content: '',
       startTimeStamp: new Date('2016-10-09').getTime(),
-      WIDTH: 170,
-      HEIGHT: 150
+      WIDTH: 250 + 20, // Card width + margin
+      HEIGHT: 170
     }
   },
   methods: {
@@ -67,24 +60,22 @@ export default {
       var bodyData = {
         id: Math.round(Date.now() / 100),
         title: this.input_title,
-        date: this.input_date,
-        content: this.input_content
+        date: this.input_date
       }
-
-      this.$http.post('http://localhost:8888/events', bodyData).then((response) => {
+      // this.items.push(bodyData)
+      this.$http.post('/events', bodyData).then((response) => {
         if (response.data === 'OKAY') {
           bodyData.offset = -1
           this.items.push(bodyData)
         }
       })
-      this.input_content = ''
       this.input_title = ''
       this.input_date = ''
       // this.showDialog = false
     },
     getFloatPos: function (mt) {
       if (mt.offset !== -1) {
-        return mt.offset * WIDTH
+        return mt.offset * this.WIDTH
       }
       var mypos = this.getVerticalOffset(mt.date)
       var i
@@ -98,31 +89,39 @@ export default {
         }
       }
       mt.offset = offset
-
       // mt.title = offset.toString()
 
       return offset * this.WIDTH
     },
-    getVerticalOffset: function(date) {
-      var diffMilli = date.getTime() - this.startTimeStamp
+    getVerticalOffset: function (date) {
+      var diffMilli = new Date(date).getTime() - this.startTimeStamp
       diffMilli /= (1000 * 60 * 60 * 24)
       return diffMilli * this.px_per_unit
     }
+  },
+  mounted: function () {
+    this.$http.get('/events').then((response) => {
+      for (var i = 0; i < response.body.length; i++) {
+        response.body[i].offset = -1
+        this.items.push(response.body[i])
+      }
+    })
   }
 }
 </script>
 
 <style scoped>
 .tl-line{
-  background-color: aquamarine;
-  width: 7px;
+  background-color: cornflowerblue;
+  width: 8px;
   height: 100vh;
   position: fixed;
   top:0;
-  left: 10px;
+  left: 18px;
 }
 .tl-item {
   position: absolute;
-  left: 25px;
+  left: 30px;
+  height: 170px;
 }
 </style>
